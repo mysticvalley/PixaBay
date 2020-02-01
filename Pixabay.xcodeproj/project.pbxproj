@@ -15,6 +15,7 @@
 		7E71853223E2FD50005438CA /* PixabayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E71853123E2FD50005438CA /* PixabayTests.swift */; };
 		7E71853D23E2FD50005438CA /* PixabayUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E71853C23E2FD50005438CA /* PixabayUITests.swift */; };
 		7E71854B23E2FDB0005438CA /* PixabayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E71854A23E2FDB0005438CA /* PixabayViewController.swift */; };
+		7E96E80E23E5650A0053FB54 /* PixaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E96E80D23E5650A0053FB54 /* PixaItem.swift */; };
 		7ED31B7023E3E185004F7BEE /* PixaCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ED31B6F23E3E185004F7BEE /* PixaCollectionCell.swift */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +51,7 @@
 		7E71853C23E2FD50005438CA /* PixabayUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixabayUITests.swift; sourceTree = "<group>"; };
 		7E71853E23E2FD50005438CA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7E71854A23E2FDB0005438CA /* PixabayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixabayViewController.swift; sourceTree = "<group>"; };
+		7E96E80D23E5650A0053FB54 /* PixaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixaItem.swift; sourceTree = "<group>"; };
 		7ED31B6F23E3E185004F7BEE /* PixaCollectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixaCollectionCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -107,6 +109,7 @@
 				7E71851C23E2FD4D005438CA /* SceneDelegate.swift */,
 				7E71852323E2FD4F005438CA /* Assets.xcassets */,
 				7E71852823E2FD4F005438CA /* Info.plist */,
+				7E96E80D23E5650A0053FB54 /* PixaItem.swift */,
 			);
 			path = Pixabay;
 			sourceTree = "<group>";
@@ -280,6 +283,7 @@
 			files = (
 				7E71851B23E2FD4D005438CA /* AppDelegate.swift in Sources */,
 				7E71851D23E2FD4D005438CA /* SceneDelegate.swift in Sources */,
+				7E96E80E23E5650A0053FB54 /* PixaItem.swift in Sources */,
 				7E71854B23E2FDB0005438CA /* PixabayViewController.swift in Sources */,
 				7ED31B7023E3E185004F7BEE /* PixaCollectionCell.swift in Sources */,
 			);

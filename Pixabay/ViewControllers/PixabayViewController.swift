@@ -1,12 +1,25 @@
 import UIKit
 
-private let reuseIdentifier = "PixaCell"
+// MARK: - Constants
+private enum Constants {
+    static let reuseIdentifier = "PixaCell"
+}
 
 class PixabayViewController: UICollectionViewController {
 
-    var collectionData: [String] = ["rajan long", "cat long", "dog long", "duck long"]
-    let spacingOffset: CGFloat = 5.0
-    var cellSize: CGFloat = 0.0
+    var pixaItems: [PixaItem] = [
+        PixaItem(authorName: "Rajan", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Jeena", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "JK Rowling", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Sherlock", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Brad", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Havana", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Transpiration", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Oman", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Manatwa", tags:["crime", "thriller", "drama"], image: nil),
+        PixaItem(authorName: "Lynda", tags:["crime", "thriller", "drama"], image: nil),
+    ]
+    let spacingOffset: CGFloat = 5
     
     @IBOutlet weak var collectionLayout: UICollectionViewFlowLayout! {
         didSet {
@@ -14,30 +27,25 @@ class PixabayViewController: UICollectionViewController {
         }
     }
     
+    private var getWidthBasedOnTraitCollection: CGFloat {
+        let isTraitCompactRegular = traitCollection.horizontalSizeClass == .compact &&
+        traitCollection.verticalSizeClass == .regular
+        return isTraitCompactRegular ? widthForCompactRegular() : widthForRegularRegular()
+    }
+    
     private func widthForCompactRegular() -> CGFloat {
-        return UIScreen.main.bounds.size.width - (2 * spacingOffset)
+        return self.collectionView.bounds.width - 2 * spacingOffset
     }
     
     private func widthForRegularRegular() -> CGFloat {
-        return (UIScreen.main.bounds.size.width - (4 * spacingOffset)) / 3
+        return self.collectionView.bounds.width / 3 - (2 * spacingOffset)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        cellSize = widthForCompactRegular()
-        
-        setUpSelfSizingCell()
-        setupNavigationBarWithSearchController()
-        configureViewBasedOnTraitCollection()
+        setupNavigationBarWithSearchController()    
     }
-    
-    private func setUpSelfSizingCell() {
-                
-//        let flowLayout = self.collectionView.collectionViewLayout as! UICollectionViewFlowLayout
-//        flowLayout.estimatedItemSize
         
-    }
-    
     // setup SearchController
     func setupNavigationBarWithSearchController() {
         title = "Pixabay"
@@ -52,19 +60,8 @@ class PixabayViewController: UICollectionViewController {
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        //TODO: For label updates with response to large texts
         super.traitCollectionDidChange(previousTraitCollection)
-        configureViewBasedOnTraitCollection()
-    }
-    
-    private func configureViewBasedOnTraitCollection() {
-        let isTraitCompactRegular = traitCollection.horizontalSizeClass == .compact &&
-        traitCollection.verticalSizeClass == .regular
-        
-        cellSize = isTraitCompactRegular ? widthForCompactRegular() : widthForRegularRegular()
-        
-        print(widthForRegularRegular())
-        print(cellSize)
-        collectionView.reloadItems(at: collectionView.indexPathsForVisibleItems)
     }
 }
 
@@ -75,36 +72,30 @@ extension PixabayViewController {
         return 1
     }
 
-
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return collectionData.count
+        return pixaItems.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! PixaCollectionCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.reuseIdentifier, for: indexPath) as! PixaCollectionCell
     
         // Configure the cell
-        cell.authorLabel.text = collectionData[indexPath.row]
-    
+        cell.authorLabel.text = pixaItems[indexPath.row].authorName
+        cell.tagsLabel.text = "Tags: \(pixaItems[indexPath.row].tags.joined(separator: ", "))"
+        cell.imageView.layer.cornerRadius = 5.0
+        
+        cell.layer.borderColor = UIColor.lightGray.cgColor
+        cell.maxWidth = getWidthBasedOnTraitCollection
         return cell
     }
 }
     
 // MARK: UICollectionViewDelegateFlowLayout
 extension PixabayViewController: UICollectionViewDelegateFlowLayout {
-
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-
-        // Height should be self sizing height
-        return CGSize(width: cellSize, height: cellSize)
-    }
-    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 5
+        return 0
     }
 
     func collectionView(_ collectionView: UICollectionView,
@@ -116,6 +107,6 @@ extension PixabayViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets.init(top: 5, left: 5, bottom: 5, right: 5)
+        return UIEdgeInsets.init(top: 0, left: 0, bottom: 0, right: 0)
     }
 }

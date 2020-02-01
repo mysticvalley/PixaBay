@@ -5,28 +5,35 @@ final class PixaCollectionCell: UICollectionViewCell {
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var authorLabel: UILabel!
     @IBOutlet weak var tagsLabel: UILabel!    
-        
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        self.backgroundColor = .blue
+    
+    // Note: must be strong
+    @IBOutlet private var maxWidthConstraint: NSLayoutConstraint! {
+        didSet {
+            maxWidthConstraint.isActive = false
+        }
     }
     
-    //forces the system to do one layout pass
-    var isHeightCalculated: Bool = false
-
-    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
-        
-        //Exhibit A - We need to cache our calculation to prevent a crash.
-        if !isHeightCalculated {
-            setNeedsLayout()
-            layoutIfNeeded()
-            let size = contentView.systemLayoutSizeFitting(layoutAttributes.size)
-            var newFrame = layoutAttributes.frame
-            newFrame.size.width = CGFloat(ceilf(Float(size.width)))
-            layoutAttributes.frame = newFrame
-            isHeightCalculated = true
+    var maxWidth: CGFloat? = nil {
+        didSet {
+            guard let maxWidth = maxWidth else {
+                return
+            }
+            maxWidthConstraint.isActive = true
+            maxWidthConstraint.constant = maxWidth
         }
-        return layoutAttributes
+    }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            contentView.leftAnchor.constraint(equalTo: leftAnchor),
+            contentView.rightAnchor.constraint(equalTo: rightAnchor),
+            contentView.topAnchor.constraint(equalTo: topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
     }
 }
 
