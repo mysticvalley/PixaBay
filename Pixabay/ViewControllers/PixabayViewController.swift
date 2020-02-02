@@ -134,21 +134,25 @@ class PixabayViewController: UICollectionViewController {
         }
         else {
             downloadImage(with: item.imageURL) { (error, image) in
-                if let image = image {
-                    DispatchQueue.main.async {
-                        cell.imageView.image = image
-                    }
-                    
-                    // OptimizeCache before adding new to check limit of maxCacheImageCount
-                    self.optimizeCache()
-                    
-                    // Save image to cache
-                    let cacheInfo = [
-                        "image" : image,
-                        "date" : Date()
-                        ] as [String : Any]
-                    self.imageCache[item.imageURL] = cacheInfo
+                if let error = error {
+                    print("Error downloading image: \(error.localizedDescription)")
+                    return
                 }
+                
+                guard let image = image else { return }
+                DispatchQueue.main.async {
+                    cell.imageView.image = image
+                }
+                
+                // OptimizeCache before adding new to check limit of maxCacheImageCount
+                self.optimizeCache()
+                
+                // Save image to cache
+                let cacheInfo = [
+                    "image" : image,
+                    "date" : Date()
+                    ] as [String : Any]
+                self.imageCache[item.imageURL] = cacheInfo
             }
         }
         
@@ -182,14 +186,14 @@ class PixabayViewController: UICollectionViewController {
 // MARK: UISearchBarDelegate
 extension  PixabayViewController: UISearchBarDelegate {
     
-    func searchBarShouldEndEditing(_ searchBar: UISearchBar) -> Bool {
-        return false
-    }
-    
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         // clear items here
         pixaItems.removeAll()
         collectionView.reloadData()
+    }
+    
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        navigationItem.searchController?.isActive = false
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
