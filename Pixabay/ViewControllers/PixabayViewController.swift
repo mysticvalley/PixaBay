@@ -3,23 +3,19 @@ import UIKit
 // MARK: - Constants
 private enum Constants {
     static let reuseIdentifier = "PixaCell"
+    static let labelTopSpacing: CGFloat = 150.0
 }
 
 class PixabayViewController: UICollectionViewController {
-
-    var pixaItems: [PixaItem] = [
-        PixaItem(authorName: "Rajan", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Jeena", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "JK Rowling", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Sherlock", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Brad", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Havana", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Transpiration", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Oman", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Manatwa", tags:["crime", "thriller", "drama"], image: nil),
-        PixaItem(authorName: "Lynda", tags:["crime", "thriller", "drama"], image: nil),
-    ]
-    let spacingOffset: CGFloat = 5
+    
+    var pixaItems = [PixaItem]()
+    let spacingOffset: CGFloat = 5    
+    var apiManager: APIManager? = nil
+    
+    var activityIndicator: UIActivityIndicatorView? = nil
+    var infoLabel: UILabel? = nil
+    
+    
     
     @IBOutlet weak var collectionLayout: UICollectionViewFlowLayout! {
         didSet {
@@ -29,7 +25,7 @@ class PixabayViewController: UICollectionViewController {
     
     private var getWidthBasedOnTraitCollection: CGFloat {
         let isTraitCompactRegular = traitCollection.horizontalSizeClass == .compact &&
-        traitCollection.verticalSizeClass == .regular
+            traitCollection.verticalSizeClass == .regular
         return isTraitCompactRegular ? widthForCompactRegular() : widthForRegularRegular()
     }
     
@@ -43,9 +39,53 @@ class PixabayViewController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavigationBarWithSearchController()    
+        setupNavigationBarWithSearchController()
+        apiManager = APIManager(with: HttpClient(with: URLSession.shared))
     }
+    
+    func displayIndicator(with text: String, showLoading: Bool) {
+        // Show no results label
+        if let infoLabel = infoLabel {
+            infoLabel.isHidden = false
+            infoLabel.text = text
+            infoLabel.sizeToFit()
+        }
+        else {
+            let label = UILabel(frame: .zero)
+            label.text = text
+            label.sizeToFit()
+            label.textColor = .gray
+            
+            label.frame = CGRect(x: collectionView.bounds.width / 2 - label.frame.width / 2, y: Constants.labelTopSpacing, width: label.frame.width, height: label.frame.height)
+            
+            infoLabel = label
+            view.addSubview(infoLabel!)
+        }
         
+        if let activityIndicator = activityIndicator {
+            if showLoading { activityIndicator.startAnimating() }
+            else { activityIndicator.stopAnimating() }
+        }
+            
+        else {
+            let indicator = UIActivityIndicatorView(style: .gray)
+            indicator.hidesWhenStopped = true
+            
+            if showLoading { indicator.startAnimating() }
+            else { indicator.stopAnimating() }
+            
+            indicator.frame.origin = CGPoint(x: collectionView.bounds.width / 2 - infoLabel!.frame.width / 2 - indicator.frame.width - spacingOffset, y: Constants.labelTopSpacing)
+            
+            activityIndicator = indicator
+            view.addSubview(activityIndicator!)
+        }
+    }
+    
+    func hideIndicator() {
+        activityIndicator?.stopAnimating()
+        infoLabel?.isHidden = true
+    }
+    
     // setup SearchController
     func setupNavigationBarWithSearchController() {
         title = "Pixabay"
@@ -54,7 +94,8 @@ class PixabayViewController: UICollectionViewController {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.placeholder = "Search"
         searchController.hidesNavigationBarDuringPresentation = false
-                
+        searchController.searchBar.delegate = self
+        
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.searchController = searchController
     }
@@ -65,23 +106,81 @@ class PixabayViewController: UICollectionViewController {
     }
 }
 
+// MARK: UISearchBarDelegate
+extension  PixabayViewController: UISearchBarDelegate {
+    func searchBarShouldEndEditing(_ searchBar: UISearchBar) -> Bool {
+        return true
+    }
+    
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        // clear items here
+        pixaItems.removeAll()
+        collectionView.reloadData()
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let apiManager = apiManager else { preconditionFailure("API Manager not instantiated") }
+        guard let searchText = searchBar.text else { print(" No results"); return }
+        
+        searchBar.resignFirstResponder()
+        displayIndicator(with: "Searching ...", showLoading: true)
+        
+        apiManager.searchImages(with: searchText) { result in
+            
+            switch result {                
+            case .success(let response):
+                guard let items = response["hits"] as? [[String: Any]] else { return }
+                if items.count > 0 {
+                    for dict in items {
+                        guard
+                            let user = dict["user"] as? String,
+                            let tags = dict["tags"] as? String,
+                            let imageURLString = dict["webformatURL"] as? String
+                            else {
+                                return
+                        }
+                        self.pixaItems.append(PixaItem(authorName: user  , tags: tags, imageURL: imageURLString, image: nil))
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.hideIndicator()
+                        self.collectionView.reloadData()
+                    }
+                }
+                else {
+                     DispatchQueue.main.async {
+                    self.displayIndicator(with: "No Results", showLoading: false)
+                        self.collectionView.reloadData()
+                    }
+                    
+                }
+                
+            case .failure(let error):
+                print(error)
+                self.hideIndicator()
+            }
+           
+        }
+    }
+}
+
 // MARK: UICollectionViewDataSource
 
 extension PixabayViewController {
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
-
+    
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return pixaItems.count
     }
-
+    
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.reuseIdentifier, for: indexPath) as! PixaCollectionCell
-    
+        
         // Configure the cell
         cell.authorLabel.text = pixaItems[indexPath.row].authorName
-        cell.tagsLabel.text = "Tags: \(pixaItems[indexPath.row].tags.joined(separator: ", "))"
+        cell.tagsLabel.text = pixaItems[indexPath.row].tags
         cell.imageView.layer.cornerRadius = 5.0
         
         cell.layer.borderColor = UIColor.lightGray.cgColor
@@ -89,7 +188,7 @@ extension PixabayViewController {
         return cell
     }
 }
-    
+
 // MARK: UICollectionViewDelegateFlowLayout
 extension PixabayViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
@@ -97,13 +196,13 @@ extension PixabayViewController: UICollectionViewDelegateFlowLayout {
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
-
+    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
-
+    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7E3CBC6923E577CD00360306 /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E3CBC6823E577CD00360306 /* APIManager.swift */; };
+		7E3CBC6B23E57D2300360306 /* HttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E3CBC6A23E57D2300360306 /* HttpClient.swift */; };
 		7E71851B23E2FD4D005438CA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E71851A23E2FD4D005438CA /* AppDelegate.swift */; };
 		7E71851D23E2FD4D005438CA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E71851C23E2FD4D005438CA /* SceneDelegate.swift */; };
 		7E71852223E2FD4D005438CA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7E71852023E2FD4D005438CA /* Main.storyboard */; };
@@ -37,6 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7E3CBC6823E577CD00360306 /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
+		7E3CBC6A23E57D2300360306 /* HttpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		7E71851723E2FD4D005438CA /* Pixabay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pixabay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E71851A23E2FD4D005438CA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7E71851C23E2FD4D005438CA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -80,6 +84,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7E3CBC6C23E6489600360306 /* API */ = {
+			isa = PBXGroup;
+			children = (
+				7E3CBC6823E577CD00360306 /* APIManager.swift */,
+				7E3CBC6A23E57D2300360306 /* HttpClient.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
 		7E71850E23E2FD4D005438CA = {
 			isa = PBXGroup;
 			children = (
@@ -103,6 +116,7 @@
 		7E71851923E2FD4D005438CA /* Pixabay */ = {
 			isa = PBXGroup;
 			children = (
+				7E3CBC6C23E6489600360306 /* API */,
 				7ED31B7323E3F007004F7BEE /* ViewControllers */,
 				7ED31B6E23E3E16F004F7BEE /* Views */,
 				7E71851A23E2FD4D005438CA /* AppDelegate.swift */,
@@ -281,9 +295,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E3CBC6923E577CD00360306 /* APIManager.swift in Sources */,
 				7E71851B23E2FD4D005438CA /* AppDelegate.swift in Sources */,
 				7E71851D23E2FD4D005438CA /* SceneDelegate.swift in Sources */,
 				7E96E80E23E5650A0053FB54 /* PixaItem.swift in Sources */,
+				7E3CBC6B23E57D2300360306 /* HttpClient.swift in Sources */,
 				7E71854B23E2FDB0005438CA /* PixabayViewController.swift in Sources */,
 				7ED31B7023E3E185004F7BEE /* PixaCollectionCell.swift in Sources */,
 			);
