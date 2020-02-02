@@ -1,10 +1,11 @@
 import UIKit
 
 // MARK: - Constants
-private enum Constants {
+enum Constants {
     static let reuseIdentifier = "PixaCell"
     static let labelTopSpacing: CGFloat = 160.0
     static let maxCacheImageCount = 1000
+    static let spacingOffset: CGFloat = 5
 }
 
 class PixabayViewController: UICollectionViewController {
@@ -15,14 +16,10 @@ class PixabayViewController: UICollectionViewController {
         }
     }
     
-    var pixaItems = [PixaItem]()
-    let spacingOffset: CGFloat = 5
-    var apiManager: APIManager? = nil
-    
+    var viewModel: PixabayViewModel!
+        
     var activityIndicator: UIActivityIndicatorView? = nil
     var infoLabel: UILabel? = nil
-    
-    var imageCache: [String: Any] = [String: Any]()
     
     private var getWidthBasedOnTraitCollection: CGFloat {
         let isTraitCompactRegular = traitCollection.horizontalSizeClass == .compact &&
@@ -31,20 +28,24 @@ class PixabayViewController: UICollectionViewController {
     }
     
     private func widthForCompactRegular() -> CGFloat {
-        return self.collectionView.bounds.width - 2 * spacingOffset
+        return self.collectionView.bounds.width - 2 * Constants.spacingOffset
     }
     
     private func widthForRegularRegular() -> CGFloat {
-        return self.collectionView.bounds.width / 3 - (2 * spacingOffset)
+        return self.collectionView.bounds.width / 3 - (2 * Constants.spacingOffset)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Setup ViewModel
+        viewModel = PixabayViewModel(httpClient: HttpClient(with: URLSession.shared))
+        
         setupNavigationBarWithSearchController()
-        apiManager = APIManager(with: HttpClient(with: URLSession.shared))
     }
     
-    func displayIndicator(with text: String, showLoading: Bool) {
+    // MARK: - View Configurations
+    func displayInformation(with text: String, showLoading: Bool) {
         // Show no results label
         if let infoLabel = infoLabel {
             infoLabel.isHidden = false
@@ -75,19 +76,18 @@ class PixabayViewController: UICollectionViewController {
             if showLoading { indicator.startAnimating() }
             else { indicator.stopAnimating() }
             
-            indicator.frame.origin = CGPoint(x: collectionView.bounds.width / 2 - infoLabel!.frame.width / 2 - indicator.frame.width - spacingOffset, y: Constants.labelTopSpacing)
+            indicator.frame.origin = CGPoint(x: collectionView.bounds.width / 2 - infoLabel!.frame.width / 2 - indicator.frame.width - Constants.spacingOffset, y: Constants.labelTopSpacing)
             
             activityIndicator = indicator
             view.addSubview(activityIndicator!)
         }
     }
     
-    func hideIndicator() {
+    func hideInformation() {
         activityIndicator?.stopAnimating()
         infoLabel?.isHidden = true
     }
     
-    // setup SearchController
     func setupNavigationBarWithSearchController() {
         title = "Pixabay"
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "©Essenstial Energy", style: .plain, target: nil, action: nil)
@@ -101,30 +101,9 @@ class PixabayViewController: UICollectionViewController {
         navigationItem.searchController = searchController
     }
     
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        //TODO: For label updates with response to large texts
-        super.traitCollectionDidChange(previousTraitCollection)
-    }
-    
-    func downloadImage(with urlString: String, completion: @escaping (Error?, UIImage?)->Void ) {
-        guard let url = URL(string: urlString) else { return }
-        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-            guard let imageData = data else {
-                if let error = error {
-                    completion(error, nil)
-                }
-                return
-            }
-            
-            let image = UIImage(data: imageData)
-            completion(nil, image)
-        }
-        task.resume()
-    }
-    
     func configurePixaCollectionCell(_ cell: PixaCollectionCell, indexPath: IndexPath) {
         // Configure the cell
-        let item = pixaItems[indexPath.row]
+        let item = viewModel.pixaItems[indexPath.row]
         cell.authorLabel.text = item.authorName
         
         // Update cell trait to change dynamic font to italic
@@ -132,11 +111,11 @@ class PixabayViewController: UICollectionViewController {
         cell.tagsLabel.font = UIFont.preferredFont(forTextStyle: .body).italic()
         
         cell.imageView.layer.cornerRadius = 5.0
-        if let cacheImage = imageCache[item.imageURL] as? [String: Any] {
+        if let cacheImage = viewModel.imageCache[item.imageURL] as? [String: Any] {
             cell.imageView.image = cacheImage["image"] as? UIImage
         }
         else {
-            downloadImage(with: item.imageURL) { (error, image) in
+            viewModel.downloadImage(with: item.imageURL) { (error, image) in
                 if let error = error {
                     print("Error downloading image: \(error.localizedDescription)")
                     return
@@ -148,41 +127,20 @@ class PixabayViewController: UICollectionViewController {
                 }
                 
                 // OptimizeCache before adding new to check limit of maxCacheImageCount
-                self.optimizeCache()
+                self.viewModel.optimizeCache()
                 
                 // Save image to cache
                 let cacheInfo = [
                     "image" : image,
                     "date" : Date()
                     ] as [String : Any]
-                self.imageCache[item.imageURL] = cacheInfo
+                
+                self.viewModel.saveImageToCache(with: item.imageURL, cacheInfo: cacheInfo)
             }
         }
         
         cell.layer.borderColor = UIColor.lightGray.cgColor
         cell.maxWidth = getWidthBasedOnTraitCollection
-    }
-    
-    func optimizeCache() {
-        if imageCache.count >= Constants.maxCacheImageCount {
-            let imagesCacheArray = imageCache.sorted { (arg0, arg1) -> Bool in
-                guard
-                    let firstValue = arg0.value as? [String: Any],
-                    let secondValue = arg1.value as? [String: Any],
-                    let firstDate = firstValue["date"] as? Date,
-                    let secondDate = secondValue["date"] as? Date
-                    else { return false }
-                
-                return firstDate < secondDate
-            }
-            
-            // Retrive oldest key to delete
-            guard let oldestKey = imagesCacheArray.first?.key else { return }
-            
-            // Flush oldest key after reaching maximum cache count limit
-            // before adding new image on cache
-            imageCache.removeValue(forKey: oldestKey)
-        }
     }
 }
 
@@ -191,7 +149,7 @@ extension  PixabayViewController: UISearchBarDelegate {
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         // clear items here
-        pixaItems.removeAll()
+        viewModel.clearPixaItems()
         collectionView.reloadData()
     }
     
@@ -200,14 +158,12 @@ extension  PixabayViewController: UISearchBarDelegate {
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let apiManager = apiManager else { preconditionFailure("API Manager not instantiated") }
         guard let searchText = searchBar.text else { print(" No results"); return }
         
         searchBar.resignFirstResponder()
-        displayIndicator(with: "Searching ...", showLoading: true)
+        displayInformation(with: "Searching ...", showLoading: true)
         
-        apiManager.searchImages(with: searchText) { result in
-            
+        viewModel.searchImages(with: searchText) { result in
             switch result {
             case .success(let response):
                 guard let items = response["hits"] as? [[String: Any]] else { return }
@@ -219,25 +175,30 @@ extension  PixabayViewController: UISearchBarDelegate {
                             let tags = dict["tags"] as? String,
                             let imageURLString = dict["webformatURL"] as? String
                             else { return }
-                        self.pixaItems.append(PixaItem(authorName: user  , tags: tags, imageURL: imageURLString))
+                        self.viewModel.savePixaItem(item: PixaItem(authorName: user, tags: tags, imageURL: imageURLString))
                     }
                     
-                    DispatchQueue.main.async {
-                        self.hideIndicator()
-                        self.collectionView.reloadData()
-                    }
+                    self.reloadCollection(showInformation: false)
                 }
                 else {
-                    DispatchQueue.main.async {
-                        self.displayIndicator(with: "No Results", showLoading: false)
-                        self.collectionView.reloadData()
-                    }
+                    self.reloadCollection(showInformation: true, text: "No Results")
                 }
                 
             case .failure(let error):
                 print(error)
-                self.hideIndicator()
+                self.hideInformation()
             }
+        }
+    }
+    
+    func reloadCollection(showInformation: Bool, text: String? = nil, showLoading: Bool = false) {
+        DispatchQueue.main.async {
+            if showInformation {
+                self.displayInformation(with: text!, showLoading: showLoading)
+            } else {
+                self.hideInformation()
+            }
+            self.collectionView.reloadData()
         }
     }
 }
@@ -250,7 +211,7 @@ extension PixabayViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return pixaItems.count
+        return self.viewModel.pixaItems.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
