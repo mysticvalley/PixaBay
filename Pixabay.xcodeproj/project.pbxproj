@@ -126,6 +126,7 @@
 		7E71851923E2FD4D005438CA /* Pixabay */ = {
 			isa = PBXGroup;
 			children = (
+				7E7524A623E7760700EF77BA /* Models */,
 				7E04677823E6A18300EC7618 /* ViewModels */,
 				7E3CBC6C23E6489600360306 /* API */,
 				7ED31B7323E3F007004F7BEE /* ViewControllers */,
@@ -134,7 +135,6 @@
 				7E71851C23E2FD4D005438CA /* SceneDelegate.swift */,
 				7E71852323E2FD4F005438CA /* Assets.xcassets */,
 				7E71852823E2FD4F005438CA /* Info.plist */,
-				7E96E80D23E5650A0053FB54 /* PixaItem.swift */,
 			);
 			path = Pixabay;
 			sourceTree = "<group>";
@@ -155,6 +155,14 @@
 				7E71853E23E2FD50005438CA /* Info.plist */,
 			);
 			path = PixabayUITests;
+			sourceTree = "<group>";
+		};
+		7E7524A623E7760700EF77BA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				7E96E80D23E5650A0053FB54 /* PixaItem.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		7ED31B6E23E3E16F004F7BEE /* Views */ = {
