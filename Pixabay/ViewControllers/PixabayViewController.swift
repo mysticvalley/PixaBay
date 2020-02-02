@@ -3,7 +3,7 @@ import UIKit
 // MARK: - Constants
 private enum Constants {
     static let reuseIdentifier = "PixaCell"
-    static let labelTopSpacing: CGFloat = 150.0
+    static let labelTopSpacing: CGFloat = 160.0
     static let maxCacheImageCount = 1000
 }
 
@@ -126,9 +126,12 @@ class PixabayViewController: UICollectionViewController {
         // Configure the cell
         let item = pixaItems[indexPath.row]
         cell.authorLabel.text = item.authorName
-        cell.tagsLabel.text = item.tags
-        cell.imageView.layer.cornerRadius = 5.0
         
+        // Update cell trait to change dynamic font to italic
+        cell.tagsLabel.text = item.tags
+        cell.tagsLabel.font = UIFont.preferredFont(forTextStyle: .body).italic()
+        
+        cell.imageView.layer.cornerRadius = 5.0
         if let cacheImage = imageCache[item.imageURL] as? [String: Any] {
             cell.imageView.image = cacheImage["image"] as? UIImage
         }
