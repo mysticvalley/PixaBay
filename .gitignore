@@ -1,0 +1,47 @@
+.DS_Store
+
+# Xcode
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+
+*.pyc
+Report/
+*.log
+
+.idea
+build
+Pods
+
+*.gcno
+*.gcda
+
+# Fastlane Snapshot
+build/Screenshots/
+
+slather/
+MIBMobileFirst.xcworkspace/xcshareddata
+test_output
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/README.md
+fastlane/CHANGELOG.md
+current_job.properties
+vendor/*
