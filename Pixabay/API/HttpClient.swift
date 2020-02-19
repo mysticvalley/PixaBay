@@ -7,7 +7,7 @@ enum PixabayError: Error {
     case apiResponseError(message: String)
 }
 
-typealias APIResultCompletionHandler = (Result<[String: Any], PixabayError>) -> Void
+typealias APIResultCompletionHandler = (Result<Data, PixabayError>) -> Void
 
 // Protocol used by both Mock and Real objects
 protocol URLSessionProtocol {
@@ -79,13 +79,7 @@ final class HttpClient {
             return
         }
         
-        do {
-            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                completion(.success(json))
-            }
-        } catch let error as NSError {
-            completion(.failure(.apiResponseError(message: "Parsing API response Error: \(String(describing: error))")))
-        }
+        completion(.success(data))
     }
 }
 

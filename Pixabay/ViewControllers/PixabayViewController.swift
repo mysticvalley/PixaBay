@@ -17,7 +17,7 @@ class PixabayViewController: UICollectionViewController {
     }
     
     var viewModel: PixabayViewModel!
-        
+    
     var activityIndicator: UIActivityIndicatorView? = nil
     var infoLabel: UILabel? = nil
     
@@ -165,25 +165,21 @@ extension  PixabayViewController: UISearchBarDelegate {
         
         viewModel.searchImages(with: searchText) { result in
             switch result {
-            case .success(let response):
-                guard let items = response["hits"] as? [[String: Any]] else { return }
-                
-                if items.count > 0 {
-                    for dict in items {
-                        guard
-                            let user = dict["user"] as? String,
-                            let tags = dict["tags"] as? String,
-                            let imageURLString = dict["webformatURL"] as? String
-                            else { return }
-                        self.viewModel.savePixaItem(item: PixaItem(authorName: user, tags: tags, imageURL: imageURLString))
+            case .success(let data):
+                do {
+                    let service = try JSONDecoder().decode(PixaBayService.self, from: data)
+                    if service.hits.count > 0 {
+                        let _ = service.hits.map { self.viewModel.savePixaItem(item: $0) }
+                        self.reloadCollection(showInformation: false)
                     }
-                    
-                    self.reloadCollection(showInformation: false)
+                    else {
+                        self.reloadCollection(showInformation: true, text: "No Results")
+                    }
                 }
-                else {
-                    self.reloadCollection(showInformation: true, text: "No Results")
+                catch let error {
+                    print("Error decoding issue: \(error.localizedDescription)")
+                    self.hideInformation()
                 }
-                
             case .failure(let error):
                 print(error)
                 self.hideInformation()
